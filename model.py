@@ -76,12 +76,19 @@ def test_step(classifier, X, Y):
 	return Y_pred,loss
 
 @tf.function
-def test_step2(classifier, X, T):
-    # Get the predicted embeddings (E_pred) from the classifier
-    _, E_pred = classifier(X, training=False)  # Assuming classifier outputs logits and embeddings
+def test_step2(classifier, X, Y, T):
+    # Get predicted outputs and embeddings from the classifier
+    Y_pred, E_pred = classifier(X, training=False)  # Assuming classifier outputs logits and embeddings
 
     # Compute Mean Squared Error (MSE) loss between predicted and target embeddings
-    loss = tf.reduce_mean(tf.keras.losses.mse(T, E_pred))
+    embedding_loss = tf.reduce_mean(tf.keras.losses.mse(T, E_pred))
 
-    return E_pred, loss
+    # Combine with a dummy classification loss (to match the return structure)
+    classification_loss = tf.reduce_mean(tf.keras.losses.sparse_categorical_crossentropy(Y, Y_pred))
+
+    # Total loss only includes embedding loss to align with phase 2 requirements
+    total_loss = embedding_loss
+
+    return Y_pred, total_loss
+
 
