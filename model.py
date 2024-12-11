@@ -76,17 +76,12 @@ def test_step(classifier, X, Y):
 	return Y_pred,loss
 
 @tf.function
-def test_step2(classifier, X, Y, T):
+def test_step2(classifier, X, T):
+    # Get the predicted embeddings (E_pred) from the classifier
     _, E_pred = classifier(X, training=False)  # Assuming classifier outputs logits and embeddings
 
-    # Compute similarities between predicted embeddings and all target embeddings
-    # (e.g., dot product or cosine similarity)
-    similarities = tf.matmul(E_pred, tf.transpose(T))  # Shape: (batch_size, num_classes)
+    # Compute Mean Squared Error (MSE) loss between predicted and target embeddings
+    loss = tf.reduce_mean(tf.keras.losses.mse(T, E_pred))
 
-    # Convert similarities to probabilities using softmax
-    Y_pred = tf.nn.softmax(similarities, axis=-1)
+    return E_pred, loss
 
-    # Calculate cross-entropy loss using true labels and predicted probabilities
-    loss = tf.keras.losses.sparse_categorical_crossentropy(Y, Y_pred)
-
-    return Y_pred, tf.reduce_mean(loss)
